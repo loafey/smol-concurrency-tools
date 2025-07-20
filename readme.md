@@ -1,6 +1,8 @@
 # smol-concurrency-tools
 A collection of nice tools developed for projects using [smol](https://github.com/smol-rs/smol).
 
+Documentation can be found here: [loafey.se/smol-concurrency-tools](https://loafey.se/smol-concurrency-tools).
+
 ## Core content:
 - `Interval`: A Stream which runs infinitely and returns on a set interval.
 - `Repeat`: A stream which contains a task which will be repeated infinitely (i.e as long as it gets awaited).
