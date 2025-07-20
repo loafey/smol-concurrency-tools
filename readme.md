@@ -21,13 +21,8 @@ Documentation can be found here: [loafey.se/smol-concurrency-tools](https://loaf
             2
         }
     );
-    let mut total = 0;
     while let Some(p) = streams.next().await {
         println!("{p}");
-        total += 1;
-        if total > 5 {
-            break;
-        }
     }
     ```
 - `select`: Port of the popular `select!` macro from other async toolkits, enabled with the `select` feature:
@@ -49,10 +44,6 @@ Documentation can be found here: [loafey.se/smol-concurrency-tools](https://loaf
                     d.as_secs_f32(),
                     timer.elapsed().as_secs_f32()
                 );
-                # total += 1;
-                # if total > 5 {
-                    # break;                
-                # }
             })
         );
     }
