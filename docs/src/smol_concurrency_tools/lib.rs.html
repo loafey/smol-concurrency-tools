@@ -174,8 +174,8 @@
 <a href=#174 id=174 data-nosnippet>174</a>/// # use smol::{stream::StreamExt};
 <a href=#175 id=175 data-nosnippet>175</a>/// # use std::time::{Duration, Instant};
 <a href=#176 id=176 data-nosnippet>176</a>/// # smol::block_on(async {
-<a href=#177 id=177 data-nosnippet>177</a>/// let mut sec1 = Interval::new(Duration::from_secs(1));
-<a href=#178 id=178 data-nosnippet>178</a>/// let mut sec2 = Interval::new(Duration::from_secs(2));
+<a href=#177 id=177 data-nosnippet>177</a>/// let mut sec1 = Interval::new(Duration::from_secs(1), false);
+<a href=#178 id=178 data-nosnippet>178</a>/// let mut sec2 = Interval::new(Duration::from_secs(2), false);
 <a href=#179 id=179 data-nosnippet>179</a>/// let timer = Instant::now();
 <a href=#180 id=180 data-nosnippet>180</a>/// # let mut total = 0;
 <a href=#181 id=181 data-nosnippet>181</a>/// loop {
@@ -225,7 +225,7 @@
 <a href=#225 id=225 data-nosnippet>225</a>/// # use smol::{stream::StreamExt};
 <a href=#226 id=226 data-nosnippet>226</a>/// # use std::time::{Duration, Instant};
 <a href=#227 id=227 data-nosnippet>227</a>/// # smol::block_on(async {
-<a href=#228 id=228 data-nosnippet>228</a>/// let mut interval = Interval::new(Duration::from_secs(2));
+<a href=#228 id=228 data-nosnippet>228</a>/// let mut interval = Interval::new(Duration::from_secs(2), false);
 <a href=#229 id=229 data-nosnippet>229</a>/// # let mut total = 0;
 <a href=#230 id=230 data-nosnippet>230</a>/// while let Some(_) = interval.next().await {
 <a href=#231 id=231 data-nosnippet>231</a>///     // runs every two seconds...
@@ -240,29 +240,45 @@
 <a href=#240 id=240 data-nosnippet>240</a>    time: Duration,
 <a href=#241 id=241 data-nosnippet>241</a>    timer: Timer,
 <a href=#242 id=242 data-nosnippet>242</a>    elapse: Instant,
-<a href=#243 id=243 data-nosnippet>243</a>}
-<a href=#244 id=244 data-nosnippet>244</a><span class="kw">impl </span>Interval {
-<a href=#245 id=245 data-nosnippet>245</a>    <span class="doccomment">/// Creates a new interval.
-<a href=#246 id=246 data-nosnippet>246</a>    </span><span class="kw">pub fn </span>new(time: Duration) -&gt; <span class="self">Self </span>{
-<a href=#247 id=247 data-nosnippet>247</a>        <span class="self">Self </span>{
-<a href=#248 id=248 data-nosnippet>248</a>            time,
-<a href=#249 id=249 data-nosnippet>249</a>            timer: Timer::after(time),
-<a href=#250 id=250 data-nosnippet>250</a>            elapse: Instant::now(),
-<a href=#251 id=251 data-nosnippet>251</a>        }
-<a href=#252 id=252 data-nosnippet>252</a>    }
-<a href=#253 id=253 data-nosnippet>253</a>}
-<a href=#254 id=254 data-nosnippet>254</a><span class="kw">impl </span>Stream <span class="kw">for </span>Interval {
-<a href=#255 id=255 data-nosnippet>255</a>    <span class="kw">type </span>Item = Duration;
-<a href=#256 id=256 data-nosnippet>256</a>
-<a href=#257 id=257 data-nosnippet>257</a>    <span class="kw">fn </span>poll_next(<span class="kw-2">mut </span><span class="self">self</span>: Pin&lt;<span class="kw-2">&amp;mut </span><span class="self">Self</span>&gt;, cx: <span class="kw-2">&amp;mut </span>Context&lt;<span class="lifetime">'_</span>&gt;) -&gt; Poll&lt;<span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>::Item&gt;&gt; {
-<a href=#258 id=258 data-nosnippet>258</a>        <span class="kw">match </span><span class="self">self</span>.timer.poll(cx) {
-<a href=#259 id=259 data-nosnippet>259</a>            Poll::Ready(<span class="kw">_</span>) =&gt; {
-<a href=#260 id=260 data-nosnippet>260</a>                <span class="self">self</span>.timer = Timer::after(<span class="self">self</span>.time);
-<a href=#261 id=261 data-nosnippet>261</a>                <span class="kw">let </span>elapsed = <span class="self">self</span>.elapse.elapsed();
-<a href=#262 id=262 data-nosnippet>262</a>                <span class="self">self</span>.elapse = Instant::now();
-<a href=#263 id=263 data-nosnippet>263</a>                Poll::Ready(<span class="prelude-val">Some</span>(elapsed))
-<a href=#264 id=264 data-nosnippet>264</a>            }
-<a href=#265 id=265 data-nosnippet>265</a>            Poll::Pending =&gt; Poll::Pending,
-<a href=#266 id=266 data-nosnippet>266</a>        }
-<a href=#267 id=267 data-nosnippet>267</a>    }
-<a href=#268 id=268 data-nosnippet>268</a>}</code></pre></div></section></main></body></html>
+<a href=#243 id=243 data-nosnippet>243</a>    compensate: bool,
+<a href=#244 id=244 data-nosnippet>244</a>}
+<a href=#245 id=245 data-nosnippet>245</a><span class="kw">impl </span>Interval {
+<a href=#246 id=246 data-nosnippet>246</a>    <span class="doccomment">/// Creates a new interval.
+<a href=#247 id=247 data-nosnippet>247</a>    /// `compensate` makes the timer account for the time taken between last the last poll,
+<a href=#248 id=248 data-nosnippet>248</a>    /// in order to account for any timing errors that might occur.
+<a href=#249 id=249 data-nosnippet>249</a>    /// Keep in mind that this compensation is far from perfect.
+<a href=#250 id=250 data-nosnippet>250</a>    </span><span class="kw">pub fn </span>new(time: Duration, compensate: bool) -&gt; <span class="self">Self </span>{
+<a href=#251 id=251 data-nosnippet>251</a>        <span class="self">Self </span>{
+<a href=#252 id=252 data-nosnippet>252</a>            time,
+<a href=#253 id=253 data-nosnippet>253</a>            timer: Timer::after(time),
+<a href=#254 id=254 data-nosnippet>254</a>            elapse: Instant::now(),
+<a href=#255 id=255 data-nosnippet>255</a>            compensate,
+<a href=#256 id=256 data-nosnippet>256</a>        }
+<a href=#257 id=257 data-nosnippet>257</a>    }
+<a href=#258 id=258 data-nosnippet>258</a>}
+<a href=#259 id=259 data-nosnippet>259</a><span class="kw">impl </span>Stream <span class="kw">for </span>Interval {
+<a href=#260 id=260 data-nosnippet>260</a>    <span class="kw">type </span>Item = Duration;
+<a href=#261 id=261 data-nosnippet>261</a>
+<a href=#262 id=262 data-nosnippet>262</a>    <span class="kw">fn </span>poll_next(<span class="kw-2">mut </span><span class="self">self</span>: Pin&lt;<span class="kw-2">&amp;mut </span><span class="self">Self</span>&gt;, cx: <span class="kw-2">&amp;mut </span>Context&lt;<span class="lifetime">'_</span>&gt;) -&gt; Poll&lt;<span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>::Item&gt;&gt; {
+<a href=#263 id=263 data-nosnippet>263</a>        <span class="kw">match </span><span class="self">self</span>.timer.poll(cx) {
+<a href=#264 id=264 data-nosnippet>264</a>            Poll::Ready(<span class="kw">_</span>) =&gt; {
+<a href=#265 id=265 data-nosnippet>265</a>                <span class="kw">if </span><span class="self">self</span>.compensate {
+<a href=#266 id=266 data-nosnippet>266</a>                    <span class="kw">let </span>account = Instant::now();
+<a href=#267 id=267 data-nosnippet>267</a>                    <span class="kw">let </span>elapsed = <span class="self">self</span>.elapse.elapsed();
+<a href=#268 id=268 data-nosnippet>268</a>                    <span class="kw">let </span>diff = Duration::from_secs_f64(
+<a href=#269 id=269 data-nosnippet>269</a>                        (elapsed.as_secs_f64() - <span class="self">self</span>.time.as_secs_f64()).max(<span class="number">0.0</span>),
+<a href=#270 id=270 data-nosnippet>270</a>                    );
+<a href=#271 id=271 data-nosnippet>271</a>                    <span class="self">self</span>.elapse = Instant::now();
+<a href=#272 id=272 data-nosnippet>272</a>                    <span class="self">self</span>.timer = Timer::after(<span class="self">self</span>.time - diff - account.elapsed());
+<a href=#273 id=273 data-nosnippet>273</a>                    Poll::Ready(<span class="prelude-val">Some</span>(elapsed))
+<a href=#274 id=274 data-nosnippet>274</a>                } <span class="kw">else </span>{
+<a href=#275 id=275 data-nosnippet>275</a>                    <span class="self">self</span>.timer = Timer::after(<span class="self">self</span>.time);
+<a href=#276 id=276 data-nosnippet>276</a>                    <span class="kw">let </span>elapsed = <span class="self">self</span>.elapse.elapsed();
+<a href=#277 id=277 data-nosnippet>277</a>                    <span class="self">self</span>.elapse = Instant::now();
+<a href=#278 id=278 data-nosnippet>278</a>                    Poll::Ready(<span class="prelude-val">Some</span>(elapsed))
+<a href=#279 id=279 data-nosnippet>279</a>                }
+<a href=#280 id=280 data-nosnippet>280</a>            }
+<a href=#281 id=281 data-nosnippet>281</a>            Poll::Pending =&gt; Poll::Pending,
+<a href=#282 id=282 data-nosnippet>282</a>        }
+<a href=#283 id=283 data-nosnippet>283</a>    }
+<a href=#284 id=284 data-nosnippet>284</a>}</code></pre></div></section></main></body></html>

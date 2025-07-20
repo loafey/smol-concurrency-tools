@@ -174,8 +174,8 @@ pub mod results;
 /// # use smol::{stream::StreamExt};
 /// # use std::time::{Duration, Instant};
 /// # smol::block_on(async {
-/// let mut sec1 = Interval::new(Duration::from_secs(1));
-/// let mut sec2 = Interval::new(Duration::from_secs(2));
+/// let mut sec1 = Interval::new(Duration::from_secs(1), false);
+/// let mut sec2 = Interval::new(Duration::from_secs(2), false);
 /// let timer = Instant::now();
 /// # let mut total = 0;
 /// loop {
@@ -225,7 +225,7 @@ macro_rules! select {
 /// # use smol::{stream::StreamExt};
 /// # use std::time::{Duration, Instant};
 /// # smol::block_on(async {
-/// let mut interval = Interval::new(Duration::from_secs(2));
+/// let mut interval = Interval::new(Duration::from_secs(2), false);
 /// # let mut total = 0;
 /// while let Some(_) = interval.next().await {
 ///     // runs every two seconds...
@@ -240,14 +240,19 @@ pub struct Interval {
     time: Duration,
     timer: Timer,
     elapse: Instant,
+    compensate: bool,
 }
 impl Interval {
     /// Creates a new interval.
-    pub fn new(time: Duration) -> Self {
+    /// `compensate` makes the timer account for the time taken between last the last poll,
+    /// in order to account for any timing errors that might occur.
+    /// Keep in mind that this compensation is far from perfect.
+    pub fn new(time: Duration, compensate: bool) -> Self {
         Self {
             time,
             timer: Timer::after(time),
             elapse: Instant::now(),
+            compensate,
         }
     }
 }
@@ -257,10 +262,21 @@ impl Stream for Interval {
     fn poll_next(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
         match self.timer.poll(cx) {
             Poll::Ready(_) => {
-                self.timer = Timer::after(self.time);
-                let elapsed = self.elapse.elapsed();
-                self.elapse = Instant::now();
-                Poll::Ready(Some(elapsed))
+                if self.compensate {
+                    let account = Instant::now();
+                    let elapsed = self.elapse.elapsed();
+                    let diff = Duration::from_secs_f64(
+                        (elapsed.as_secs_f64() - self.time.as_secs_f64()).max(0.0),
+                    );
+                    self.elapse = Instant::now();
+                    self.timer = Timer::after(self.time - diff - account.elapsed());
+                    Poll::Ready(Some(elapsed))
+                } else {
+                    self.timer = Timer::after(self.time);
+                    let elapsed = self.elapse.elapsed();
+                    self.elapse = Instant::now();
+                    Poll::Ready(Some(elapsed))
+                }
             }
             Poll::Pending => Poll::Pending,
         }

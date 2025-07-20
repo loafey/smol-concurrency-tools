@@ -4,8 +4,8 @@
 Requires the feature <code>select</code> and the nightly feature <code>macro_metavar_expr</code>. Disabled by default due to these requirements.</p>
 
 <div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="attr">#![feature(macro_metavar_expr)]
-</span><span class="kw">let </span><span class="kw-2">mut </span>sec1 = Interval::new(Duration::from_secs(<span class="number">1</span>));
-<span class="kw">let </span><span class="kw-2">mut </span>sec2 = Interval::new(Duration::from_secs(<span class="number">2</span>));
+</span><span class="kw">let </span><span class="kw-2">mut </span>sec1 = Interval::new(Duration::from_secs(<span class="number">1</span>), <span class="bool-val">false</span>);
+<span class="kw">let </span><span class="kw-2">mut </span>sec2 = Interval::new(Duration::from_secs(<span class="number">2</span>), <span class="bool-val">false</span>);
 <span class="kw">let </span>timer = Instant::now();
 <span class="kw">loop </span>{
     <span class="macro">select!</span>(
