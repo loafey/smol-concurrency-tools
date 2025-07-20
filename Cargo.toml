@@ -1,0 +1,12 @@
+[package]
+name = "smol-concurrency-tools"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+futures-concurrency = "7"
+paste = { version = "1", optional = true }
+smol = "2"
+
+[features]
+select = ["dep:paste"]
