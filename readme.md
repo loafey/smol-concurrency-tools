@@ -1,5 +1,6 @@
 # smol-concurrency-tools
-A collection of nice tools developed for projects using [smol](https://github.com/smol-rs/smol).
+A collection of nice tools developed for my own projects using [smol](https://github.com/smol-rs/smol).
+They are small, but work pretty nicely so thought I could publish them.
 
 Documentation can be found here: [loafey.se/smol-concurrency-tools](https://loafey.se/smol-concurrency-tools).
 
