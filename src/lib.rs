@@ -2,6 +2,12 @@
 #![warn(missing_docs)]
 #![doc = include_str!("../readme.md")]
 
+/// Re-export of the [paste](https://docs.rs/paste/latest/paste/) crate.
+#[cfg(feature = "select")]
+pub mod paste {
+    pub use paste::*;
+}
+
 use futures_concurrency::{stream::Merge, vec};
 use smol::{
     Timer,
@@ -160,7 +166,7 @@ enum RepeatInner<'l, T> {
 pub mod results;
 
 /// A clone of the popular `select!` macro, but made compatible with `smol`.
-/// Requires the nightly feature `macro_metavar_expr`.
+/// Requires the feature `select` and the nightly feature `macro_metavar_expr`. Disabled by default due to these requirements.
 /// ```
 /// #![feature(macro_metavar_expr)]
 /// # #[macro_use] extern crate smol_concurrency_tools;
@@ -202,7 +208,7 @@ pub mod results;
 #[macro_export]
 macro_rules! select {
     ($(($input:expr, |$pat:pat_param| $func:expr)),+) => {{
-        paste::paste! {
+        smol_concurrency_tools::paste::paste! {
             use futures_concurrency::future::{Race as _};
             use smol_concurrency_tools::results::[<SelectionResult ${count($input)}>] as __ReturnType;
             let futures = ($(async { __ReturnType::[<Res ${index()}>] ($input.await)}),*).race();

@@ -9,4 +9,5 @@ paste = { version = "1", optional = true }
 smol = "2"
 
 [features]
+# default = ["select"]
 select = ["dep:paste"]

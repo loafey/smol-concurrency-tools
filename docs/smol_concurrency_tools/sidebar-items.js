@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["repeats"],"macro":["repeat","select"],"mod":["results"],"struct":["Interval","Repeat","Repeats","RepeatsBuilder"]};
+window.SIDEBAR_ITEMS = {"fn":["repeats"],"macro":["repeat","select"],"mod":["paste","results"],"struct":["Interval","Repeat","Repeats","RepeatsBuilder"]};
