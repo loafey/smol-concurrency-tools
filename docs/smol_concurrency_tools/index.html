@@ -9,7 +9,7 @@
 </ul>
 <h3 id="macros"><a class="doc-anchor" href="#macros">§</a>Macros:</h3>
 <ul>
-<li><code>repeat</code>: Nice wrapper around <code>Repeats</code><div class="example-wrap"><pre class="language-rs"><code>let mut streams = repeat!(
+<li><code>repeat</code>: A clean wrapper around the <code>Repeats</code> struct:<div class="example-wrap"><pre class="language-rs"><code>let mut streams = repeat!(
     async {
         Timer::after(Duration::from_secs(1)).await;
         1
@@ -22,7 +22,7 @@
 while let Some(p) = streams.next().await {
     println!(&quot;{p}&quot;);
 }</code></pre></div></li>
-<li><code>select</code>: Port of the popular <code>select!</code> macro from other async toolkits, enabled with the <code>select</code> feature:<div class="example-wrap"><pre class="language-rs"><code>loop {
+<li><code>select</code>: A port of the popular <code>select!</code> macro from other async frameworks, enabled with the <code>select</code> feature:<div class="example-wrap"><pre class="language-rs"><code>loop {
     select!(
         (sec1.next(), |d| {
             let d = d.unwrap();

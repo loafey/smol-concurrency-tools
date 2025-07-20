@@ -9,7 +9,7 @@ Documentation can be found here: [loafey.se/smol-concurrency-tools](https://loaf
 - `Repeats`: A stream which repeats a set of tasks infinitely (i.e as long as it gets awaited).
 
 ## Macros: 
-- `repeat`: Nice wrapper around `Repeats`
+- `repeat`: A clean wrapper around the `Repeats` struct:
     ```rs
     let mut streams = repeat!(
         async {
@@ -25,7 +25,7 @@ Documentation can be found here: [loafey.se/smol-concurrency-tools](https://loaf
         println!("{p}");
     }
     ```
-- `select`: Port of the popular `select!` macro from other async toolkits, enabled with the `select` feature:
+- `select`: A port of the popular `select!` macro from other async frameworks, enabled with the `select` feature:
     ```rs
     loop {
         select!(
